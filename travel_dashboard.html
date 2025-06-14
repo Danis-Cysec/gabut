@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analisis Sistem Pemesanan Tiket Indah Travel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-item:hover {
+            transform: scale(1.05);
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .system-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: #667eea;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .tech-stack {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .tech-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tech-item:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .comparison-table tr:hover {
+            background-color: #e3f2fd;
+            transition: background-color 0.3s ease;
+        }
+
+        .status-good {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .status-bad {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .system-flow {
+                flex-direction: column;
+            }
+
+            .flow-step::after {
+                content: '↓';
+                right: 50%;
+                bottom: -15px;
+                top: auto;
+                transform: translateX(50%);
+            }
+
+            .tech-stack {
+                justify-content: center;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .export-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>📊 Dashboard Sistem Informasi Pemesanan Tiket</h1>
+            <p>Analisis Komprehensif Indah Travel - Berbasis Web</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Key Metrics -->
+            <div class="card">
+                <h3><span class="icon">📈</span>Metrik Kinerja Sistem</h3>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">85%</div>
+                        <div class="metric-label">Efisiensi Waktu</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">24/7</div>
+                        <div class="metric-label">Akses Online</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">70%</div>
+                        <div class="metric-label">Penghematan Biaya</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">100%</div>
+                        <div class="metric-label">Fungsionalitas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PIECES Analysis Chart -->
+            <div class="card">
+                <h3><span class="icon">🔍</span>Analisis PIECES</h3>
+                <div class="chart-container">
+                    <canvas id="piecesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- System Flow -->
+            <div class="card full-width">
+                <h3><span class="icon">🔄</span>Alur Sistem Pemesanan</h3>
+                <div class="system-flow">
+                    <div class="flow-step">
+                        <strong>🏠 Beranda</strong><br>
+                        <small>Akses informasi</small>
+                    </div>
+                    <div class="flow-step">
+                        <strong>🎫 Cek Tiket</strong><br>
+                        <small>Pilih kelas & harga</small>
+                    </div>
+                    <div class="flow-step">
+                        <strong>📅 Jadwal</strong><br>
+                        <small>Lihat keberangkatan</small>
+                    </div>
+                    <div class="flow-step">
+                        <strong>📋 Pemesanan</strong><br>
+                        <small>Isi data diri</small>
+                    </div>
+                    <div class="flow-step">
+                        <strong>🧾 Bukti</strong><br>
+                        <small>Cetak tiket</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technology Stack -->
+            <div class="card">
+                <h3><span class="icon">⚡</span>Stack Teknologi</h3>
+                <div class="tech-stack">
+                    <div class="tech-item">PHP</div>
+                    <div class="tech-item">MySQL</div>
+                    <div class="tech-item">HTML/CSS</div>
+                    <div class="tech-item">Dreamweaver</div>
+                    <div class="tech-item">Sublime Text</div>
+                </div>
+            </div>
+
+            <!-- System Comparison -->
+            <div class="card">
+                <h3><span class="icon">⚖️</span>Perbandingan Sistem</h3>
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Detailed Comparison Table -->
+            <div class="card full-width">
+                <h3><span class="icon">📊</span>Analisis Perbandingan Detail</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Aspek</th>
+                            <th>Sistem Lama</th>
+                            <th>Sistem Baru</th>
+                            <th>Peningkatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Metode Pemesanan</strong></td>
+                            <td class="status-bad">Manual (Loket/Telepon)</td>
+                            <td class="status-good">Online 24/7</td>
+                            <td class="status-good">+200% Aksesibilitas</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pencatatan Data</strong></td>
+                            <td class="status-bad">Buku Manual</td>
+                            <td class="status-good">Database MySQL</td>
+                            <td class="status-good">+300% Keamanan</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Informasi Jadwal</strong></td>
+                            <td class="status-bad">Harus ke Loket</td>
+                            <td class="status-good">Real-time Online</td>
+                            <td class="status-good">+100% Efisiensi</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Laporan</strong></td>
+                            <td class="status-bad">Tidak Ada</td>
+                            <td class="status-good">Harian & Bulanan</td>
+                            <td class="status-good">+∞% Visibility</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Biaya Operasional</strong></td>
+                            <td class="status-bad">Tinggi</td>
+                            <td class="status-good">Rendah</td>
+                            <td class="status-good">-70% Biaya</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Waktu Pemesanan</strong></td>
+                            <td class="status-bad">30-60 menit</td>
+                            <td class="status-good">5-10 menit</td>
+                            <td class="status-good">-80% Waktu</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- User Satisfaction -->
+            <div class="card">
+                <h3><span class="icon">😊</span>Kepuasan Pengguna</h3>
+                <div class="chart-container">
+                    <canvas id="satisfactionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- System Features -->
+            <div class="card">
+                <h3><span class="icon">🎯</span>Fitur Sistem</h3>
+                <div class="chart-container">
+                    <canvas id="featuresChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="export-btn" onclick="exportDashboard()">📊 Export Dashboard</button>
+
+    <script>
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePiecesChart();
+            initializeComparisonChart();
+            initializeSatisfactionChart();
+            initializeFeaturesChart();
+        });
+
+        // PIECES Analysis Chart
+        function initializePiecesChart() {
+            const ctx = document.getElementById('piecesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Kinerja', 'Informasi', 'Ekonomi', 'Pengendalian', 'Efisiensi', 'Pelayanan'],
+                    datasets: [{
+                        label: 'Sistem Lama',
+                        data: [2, 3, 2, 2, 2, 3],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+                        pointBackgroundColor: '#e74c3c'
+                    }, {
+                        label: 'Sistem Baru',
+                        data: [8, 9, 8, 9, 9, 9],
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.2)',
+                        pointBackgroundColor: '#27ae60'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // System Comparison Chart
+        function initializeComparisonChart() {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Waktu Pemesanan', 'Biaya Operasional', 'Aksesibilitas', 'Keamanan Data'],
+                    datasets: [{
+                        label: 'Sistem Lama',
+                        data: [60, 100, 20, 30],
+                        backgroundColor: '#e74c3c',
+                        borderRadius: 5
+                    }, {
+                        label: 'Sistem Baru',
+                        data: [10, 30, 100, 95],
+                        backgroundColor: '#27ae60',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 120
+                        }
+                    }
+                }
+            });
+        }
+
+        // User Satisfaction Chart
+        function initializeSatisfactionChart() {
+            const ctx = document.getElementById('satisfactionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sangat Puas', 'Puas', 'Cukup', 'Kurang Puas'],
+                    datasets: [{
+                        data: [45, 35, 15, 5],
+                        backgroundColor: [
+                            '#27ae60',
+                            '#3498db',
+                            '#f39c12',
+                            '#e74c3c'
+                        ],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // System Features Chart
+        function initializeFeaturesChart() {
+            const ctx = document.getElementById('featuresChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: ['Dashboard Admin', 'Pemesanan Online', 'Cek Jadwal', 'Laporan', 'Bukti Tiket', 'Manajemen Data'],
+                    datasets: [{
+                        data: [95, 100, 90, 85, 95, 90],
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#f5576c',
+                            '#4facfe',
+                            '#00f2fe'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Export functionality
+        function exportDashboard() {
+            // Create a comprehensive report
+            const reportData = {
+                title: "Laporan Analisis Sistem Informasi Pemesanan Tiket Indah Travel",
+                date: new Date().toLocaleDateString('id-ID'),
+                summary: {
+                    peningkatan_efisiensi: "85%",
+                    penghematan_biaya: "70%",
+                    kepuasan_pengguna: "80%",
+                    fungsionalitas: "100%"
+                },
+                technologies: ["PHP", "MySQL", "HTML/CSS", "Dreamweaver", "Sublime Text"],
+                improvements: [
+                    "Sistem pemesanan online 24/7",
+                    "Database terpusat dengan MySQL",
+                    "Laporan otomatis harian dan bulanan",
+                    "Interface yang user-friendly",
+                    "Keamanan data yang terjamin"
+                ]
+            };
+
+            // Convert to JSON and create download
+            const dataStr = JSON.stringify(reportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Laporan_Sistem_Indah_Travel_' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            
+            alert('📊 Dashboard berhasil diekspor! File JSON telah diunduh.');
+        }
+
+        // Add some interactive animations
+        function addInteractivity() {
+            // Animate cards on scroll
+            const cards = document.querySelectorAll('.card');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.6s ease';
+                observer.observe(card);
+            });
+        }
+
+        // Initialize interactivity
+        document.addEventListener('DOMContentLoaded', addInteractivity);
+
+        // Add click tracking for metrics
+        document.querySelectorAll('.metric-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const value = this.querySelector('.metric-value').textContent;
+                const label = this.querySelector('.metric-label').textContent;
+                alert(`📊 ${label}: ${value}\n\nMetrik ini menunjukkan peningkatan signifikan dari sistem lama ke sistem baru.`);
+            });
+        });
+
+        // Add hover effects for tech stack
+        document.querySelectorAll('.tech-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const tech = this.textContent;
+                const descriptions = {
+                    'PHP': 'Bahasa pemrograman server-side untuk logika aplikasi',
+                    'MySQL': 'Database management system untuk penyimpanan data',
+                    'HTML/CSS': 'Teknologi frontend untuk antarmuka pengguna',
+                    'Dreamweaver': 'IDE untuk pengembangan web visual',
+                    'Sublime Text': 'Text editor untuk coding yang efisien'
+                };
+                alert(`💻 ${tech}\n\n${descriptions[tech] || 'Teknologi pendukung sistem'}`);
+            });
+        });
+    </script>
+</body>
+</html>
